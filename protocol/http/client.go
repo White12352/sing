@@ -67,7 +67,7 @@ func (c *Client) DialContext(ctx context.Context, network string, destination M.
 		return nil, err
 	}
 	URL := destination.String()
-	HeaderString := "CONNECT " + URL + " HTTP/1.1\r\n"
+	HeaderString := "CONNECT " + URL + "HTTP/1.1\r\n"
 	tempHeaders := map[string][]string{
 		"Host":             {destination.String()},
 		"User-Agent":       {"Go-http-client/1.1"},
