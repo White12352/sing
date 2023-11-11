@@ -4,11 +4,10 @@ import (
 	std_bufio "bufio"
 	"context"
 	"encoding/base64"
-	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
-	"strings"
 
 	"github.com/sagernet/sing/common/buf"
 	"github.com/sagernet/sing/common/bufio"
@@ -66,58 +65,41 @@ func (c *Client) DialContext(ctx context.Context, network string, destination M.
 	if err != nil {
 		return nil, err
 	}
-	URL := destination.String()
-	HeaderString := "CONNECT " + URL + " HTTP/1.1\r\n"
-	tempHeaders := map[string][]string{
-		"Host":             {destination.String()},
-		"User-Agent":       {"Go-http-client/1.1"},
-		"Proxy-Connection": {"Keep-Alive"},
+	request := &http.Request{
+		Method: http.MethodConnect,
+		URL: &url.URL{
+		},
+		Header: http.Header{
+			"Proxy-Connection": []string{"Keep-Alive"},
+		},
 	}
-
-	for key, valueList := range c.headers {
-		if key == "Baidu-Direct" && valueList[0] == "true" {
-			HeaderString = "CONNECT " + URL + "HTTP/1.1\r\n"
-		} else if key == "With-At" && valueList[0] != "" {
-			HeaderString = "CONNECT " + URL + "@" + valueList[0] + " HTTP/1.1\r\n"
-		} else {
-			tempHeaders[key] = valueList
+	if c.path != "" {
+		err = URLSetPath(request.URL, c.path)
+		if err != nil {
+			return nil, err
 		}
 	}
-
-	if c.path != "" {
-		tempHeaders["Path"] = []string{c.path}
+	for key, valueList := range c.headers {
+		request.Header.Set(key, valueList[0])
+		for _, value := range valueList[1:] {
+			request.Header.Add(key, value)
+		}
 	}
-
 	if c.username != "" {
 		auth := c.username + ":" + c.password
-		if _, ok := tempHeaders["Proxy-Authorization"]; ok {
-			tempHeaders["Proxy-Authorization"][len(tempHeaders["Proxy-Authorization"])] = "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-		} else {
-			tempHeaders["Proxy-Authorization"] = []string{"Basic " + base64.StdEncoding.EncodeToString([]byte(auth))}
-		}
+		request.Header.Add("Proxy-Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
 	}
-	for key, valueList := range tempHeaders {
-		HeaderString += key + ": " + strings.Join(valueList, "; ") + "\r\n"
-	}
-
-	HeaderString += "\r\n"
-
-	_, err = fmt.Fprintf(conn, "%s", HeaderString)
-
+	err = request.Write(conn)
 	if err != nil {
 		conn.Close()
 		return nil, err
 	}
-
 	reader := std_bufio.NewReader(conn)
-
-	response, err := http.ReadResponse(reader, nil)
-
+	response, err := http.ReadResponse(reader, request)
 	if err != nil {
 		conn.Close()
 		return nil, err
 	}
-
 	if response.StatusCode == http.StatusOK {
 		if reader.Buffered() > 0 {
 			buffer := buf.NewSize(reader.Buffered())
