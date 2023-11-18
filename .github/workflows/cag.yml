@@ -40,11 +40,11 @@ jobs:
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
-          git checkout -b dev-1
+          git checkout -b dev
           rm -rf .github
           cp -r sing/* .
           cp -r sing/.github .
           rm -rf sing
           git add .
           git commit -m "commit"
-          git push --force origin dev-1
+          git push --force origin dev
