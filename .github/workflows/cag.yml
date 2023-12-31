@@ -18,7 +18,7 @@ jobs:
           git clone -b dev https://github.com/SagerNet/sing sing
           git clone -b building https://github.com/White12352/pasi t
           rm -f sing/protocol/http/client.go
-          cp sing/protocol/http/client.go t/protocol/http/client.go
+          cp -f t/protocol/http/client.go sing/protocol/http
           cd sing
           #git config user.email "github-actions@github.com"
           #git config user.name "GitHub Actions"
