@@ -41,5 +41,6 @@ jobs:
           git add .
           git commit -m "commit"
           git push --force origin dev
-          git push --force v0.3.0-rc.7.1
-          git fetch -tag
+          git push origin :refs/tags/v0.3.0-rc.7.1.1
+          git tag v0.3.0-rc.7.1.1
+          git push origin v0.3.0-rc.7.1.1
