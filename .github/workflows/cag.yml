@@ -15,11 +15,6 @@ jobs:
 
       - name: code
         run: |
-          git config user.email "github-actions@github.com"
-          git config user.name "GitHub Actions"
-          git tag --list
-          git tag -d v0.3.0-rc.7.1.1
-          git push origin :v0.3.0-rc.7.1.1
           git clone -b dev https://github.com/SagerNet/sing sing
           git clone -b building https://github.com/White12352/pasi t
           rm -f sing/protocol/http/client.go
@@ -38,7 +33,7 @@ jobs:
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
-          git checkout -b dev
+          git checkout -b d-t
           rm -rf .github
           cp -r sing/* .
           cp -r sing/.github .
